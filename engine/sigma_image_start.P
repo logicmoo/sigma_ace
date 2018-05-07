@@ -1,0 +1,22 @@
+
+
+:- style_check(-singleton).
+:- style_check(-discontiguous).
+:- style_check(-atom).
+:- style_check(-string).
+:-index(sigmaCache(1)).
+:-index(sigmaCache(1,1)).
+:-index(sigmaCache(1,1,1)).
+:-index(sigmaCache(1,1,1,1)).
+:-index(sigmaCache(1,1,1,1,0)).
+:-index(sigmaCache(1,0,1,1,1,0)).
+:-index(sigmaCache(1,1,0,0,1,1,0,0,0)).
+:-dynamic(sigmaCache/1).
+:-dynamic(sigmaCache/2).
+:-dynamic(sigmaCache/3).
+:-dynamic(sigmaCache/4).
+:-dynamic(sigmaCache/5).
+:-dynamic(sigmaCache/6).
+:-dynamic(sigmaCache/9).
+
+

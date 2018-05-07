@@ -1,0 +1,67 @@
+:- style_check(-singleton).
+:- style_check(-discontiguous).
+:- style_check(-atom).
+:- style_check(-string).
+	
+:-moduleEnsureLoaded('sigma_objects.P').
+:-moduleEnsureLoaded('sigma_response.P').
+:-moduleEnsureLoaded('sigma_ports.P').
+:-moduleEnsureLoaded('sigma_reader.P').
+:-moduleEnsureLoaded('sigma_soap.P').
+:-moduleEnsureLoaded('sigma_transitivity.P').
+:-moduleEnsureLoaded('sigma_query_buffer.P').
+:-moduleEnsureLoaded('sigma_enable.P').
+:-moduleEnsureLoaded('sigma_graphs.P').
+:-moduleEnsureLoaded('sigma_canonicalize.P').
+:-moduleEnsureLoaded('sigma_api_test.P').
+:-moduleEnsureLoaded('sigma_exploration.P').
+:-moduleEnsureLoaded('sigma_utility.P').
+:-moduleEnsureLoaded('sigma_builtin.P').   
+:-moduleEnsureLoaded('sigma_ace.P').
+:-moduleEnsureLoaded('sigma_ale.P').
+:-moduleEnsureLoaded('sigma_kif_check.P').
+:-moduleEnsureLoaded('sigma_file_functions.P').
+:-moduleEnsureLoaded('sigma_theorems.P').
+%:-moduleEnsureLoaded('sigma_suo.P').
+%:-moduleEnsureLoaded('sigma_temporal.P').
+%:-moduleEnsureLoaded('sigma_instance.P').
+%:-moduleEnsureLoaded('sigma_member.P').
+%:-moduleEnsureLoaded('sigma_sentence.P').
+%:-moduleEnsureLoaded('sigma_attribute.P').
+:-moduleEnsureLoaded('sigma_assert.P').
+:-moduleEnsureLoaded('sigma_retract.P').
+:-moduleEnsureLoaded('sigma_arg_domains.P').
+:-moduleEnsureLoaded('sigma_surface_inference.P').
+:-moduleEnsureLoaded('sigma_surface_valence.P').
+:-moduleEnsureLoaded('sigma_surf_to_can.P').
+:-moduleEnsureLoaded('sigma_surface_inference.P').
+:-moduleEnsureLoaded('sigma_reduce.P').
+:-moduleEnsureLoaded('sigma_functions.P').
+:-moduleEnsureLoaded('sigma_operation.P').
+:-moduleEnsureLoaded('sigma_graphs.P').
+:-moduleEnsureLoaded('sigma_modules.P').
+:-moduleEnsureLoaded('sigma_database.P').
+:-moduleEnsureLoaded('sigma_consultation.P').
+:-moduleEnsureLoaded('sigma_useragent.P').
+:-moduleEnsureLoaded('sigma_useragent_query.P').
+:-moduleEnsureLoaded('sigma_query.P').
+:-moduleEnsureLoaded('sigma_truth_maintains.P').
+:-moduleEnsureLoaded('sigma_tester.P').
+:-moduleEnsureLoaded('sigma_translit.P').
+:-moduleEnsureLoaded('sigma_term_ml.P').
+:-moduleEnsureLoaded('sigma_httpd.P').
+:-moduleEnsureLoaded('sigma_image.P').
+:-moduleEnsureLoaded('sigma_equal.P').
+:-moduleEnsureLoaded('sigma_query.P').
+:-moduleEnsureLoaded('sigma_compiler.P').
+:-moduleEnsureLoaded('sigma_tabling.P').
+:-moduleEnsureLoaded('sigma_inference.P').
+:-moduleEnsureLoaded('sigma_dynamics.P').
+:-moduleEnsureLoaded('sigma_language.P').
+:-moduleEnsureLoaded('sigma_server.P').
+:-moduleEnsureLoaded('sigma_icl.P').
+:-moduleEnsureLoaded('sigma_ale.P').
+
+:-write('% Loaded Bootstrap'),nl.
+
+
