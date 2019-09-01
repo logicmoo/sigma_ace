@@ -1,8 +1,8 @@
 :Label1
 
-copy /y sigma_image_blank.P sigma_image.P
+copy /y sigma_image_blank.pl sigma_image.pl
 
-start "Sigma Server Compiler" /SHARED /B /MIN /WAIT /LOW /D. "..\swi\bin\plcon.exe" -f sigma_console.P
+start "Sigma Server Compiler" /SHARED /B /MIN /WAIT /LOW /D. "..\swi\bin\plcon.exe" -f sigma_console.pl
 
 
 

@@ -13,7 +13,7 @@ killall pl
 
 chmod -R 755 ../../*
 chmod -R 777 ../sigma-rt
-chmod 777 ../engine/sigma_image.P
+chmod 777 ../engine/sigma_image.pl
 chmod 777 ../engine/
 
 export DISPLAY=10.0.0.2:0.0

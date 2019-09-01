@@ -5,8 +5,8 @@
 
 :- style_check(-singleton).
 :- style_check(-discontiguous).
-:- style_check(-atom).
-:- style_check(-string).
+:- was_style_check(-atom)..
+:- was_style_check(-string).
 
 %:-use_module(library(threadutil)).        
 thread_create(X,win32,_):-X.
