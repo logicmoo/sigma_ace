@@ -122,7 +122,7 @@ get_time(6667).
 convert_time(T,'Now is the time').
 convert_time(T,1,2,3,4,5,6,7).
 
-numbervars(X,_,Y,Z):-numbervars(X,Y,Z).
+sigma_numbervars(X,_,Y,Z):-sigma_numbervars(X,Y,Z).
 
 
 :-setSigmaOptionDefaults.
@@ -248,7 +248,7 @@ unnumbervars(X,Y):-
 
 recopy_each_var(X,[],X).
 recopy_each_var(X,[V|List],Y):-
-	subst(X,V,NewVar,O),
+	ok_subst(X,V,NewVar,O),
 	recopy_each_var(O,List,Y),!.
 	
 	

@@ -5,8 +5,10 @@
 
 %:- assert(user:prolog_file_type('P', prolog)). 	
 
-:-dynamic(serve_connection).
+:-use_module(library(logicmoo_utils)).
+:-dynamic(serve_connection/0).
 
+sigma_notrace(G):- once(G).
 
 :- style_check(-singleton).
 :- style_check(-discontiguous).
@@ -30,6 +32,7 @@ was_indexed(_).
 :-dynamic(isKeepAlive/1).
 :-dynamic(isConsoleOverwritten/0).
 :-dynamic(sigmaThreadCreate_data/5).
+:-volatile(sigmaThreadCreate_data/5).
 
 
 createPrologServer(Port) :-
@@ -37,12 +40,17 @@ createPrologServer(Port) :-
 
 win32:-
 	setSigmaOption(client=html),
-	xmlPrologServer(5001).
+	xmlPrologServer(4051).
+
+:- dynamic(sigma_tmp:sigma_server_socket/1).
+:- volatile(sigma_tmp:sigma_server_socket/1).
+tcp_close_socket_sigma:- ignore((sigma_tmp:sigma_server_socket(Socket), catch(tcp_close_socket(Socket),_,true))).
 
 xmlPrologServer(Port):-
 	tcp_socket(ServerSocket),
         catch(ignore(tcp_setopt(ServerSocket, reuseaddr)),_,true),
-	at_halt(tcp_close_socket(ServerSocket)),
+  assert(sigma_tmp:sigma_server_socket(ServerSocket)),
+	at_halt(tcp_close_socket_sigma),
 	please_tcp_bind(ServerSocket, Port),
 	tcp_listen(ServerSocket, 655),
 	repeat,
@@ -73,9 +81,10 @@ mutex_call(Goal,Id):-
 please_tcp_bind(ServerSocket, Port):-
 	catch((tcp_bind(ServerSocket, Port),
 	flush_output,
-	writeSTDERR('cs.\nSigma server started on port ~w. \n\nYes\n?- ',[Port]),flush_output),
+	%writeSTDERR('%~ cs.\nSigma server started on port ~w. \n\nYes\n?- ',[Port]),flush_output),
+  writeSTDERR('%~ Sigma server started on port ~w.',[Port]),flush_output),
 	error(E,_),
-	(writeSTDERR('\nWaiting for OS to release port ~w. \n(sleeping 4 secs becasue "~w")\n',[Port,E]),
+	(nop(writeSTDERR('\nWaiting for OS to release port ~w. \n(sleeping 4 secs becasue "~w")\n',[Port,E])),
 	sleep(4),
 	please_tcp_bind(ServerSocket, Port))),!.
 	
@@ -86,7 +95,7 @@ writeSavedPrompt:-flush_output.
 writeOverwritten:-isConsoleOverwritten,!.
 writeOverwritten:-assert(isConsoleOverwritten).
 
-cleanOldThreads:-notrace(cleanOldThreadsTracable).
+cleanOldThreads:-sigma_notrace(cleanOldThreadsTracable).
 
 cleanOldThreadsTracable:-
 	saveUserInput,
@@ -151,7 +160,7 @@ xmlExitTags:-thread_self(Self),retract(xmlCurrentOpenTags(Self,A)),writeFmtServe
 xmlExitTags.
        
 writeSTDERR(F):-writeSTDERR('~q',[F]).
-writeSTDERR(F,A):-notrace((
+writeSTDERR(F,A):-sigma_notrace((
 	format(user_error,F,A),
 	nl(user_error),
 	flush_output(user_error))).
@@ -278,7 +287,7 @@ throwSigma(Module,Type,Details):-
 	ifInteractive(writeDebug('Post throwSigma')),!.
 
 cs:-  setSigmaOption(client=html),
-	createPrologServer(5001),
+	createPrologServer(4051),
 	cleanOldThreads.
 
 :- ensure_loaded('sigma_swiprolog.pl').

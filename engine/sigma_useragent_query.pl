@@ -31,7 +31,7 @@ writeUserAgentBuffer:-!.
 % Send to debugger
 % ===========================================================
 writeAnswersUserAgent(UResultsSoFar,Result,InProof,Status):-
-	notrace((once(writeDebug(writeAnswersUserAgent(UResultsSoFar,Result,InProof,Status))),fail)).
+	sigma_notrace((once(writeDebug(writeAnswersUserAgent(UResultsSoFar,Result,InProof,Status))),fail)).
 	
 % ===========================================================
 % Hide certain returns
@@ -62,7 +62,7 @@ writeAnswersUserAgent(searchfailed, ['Summary'=Logic|_G4695], final_answer(possi
 % ===========================================================
 % Write Answers
 % ===========================================================
-:-dynamic(show_all_proofs).
+:-dynamic(show_all_proofs/0).
 
 
 /*

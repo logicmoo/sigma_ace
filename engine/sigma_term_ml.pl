@@ -57,7 +57,7 @@ toMarkUp(java,Var,VS,Chars):-!,catch(toMarkUp(html,Var,VS,Chars),_,true),!.
 toMarkUp(L,T,V,Chars):-!,
 	ignore(catch(/*notrace*/((
 	copy_term((T,V),(CT,CV)),
-	numbervars((CT,CV),'$VAR',0,_),%trace,
+	sigma_numbervars((CT,CV),0,_),%trace,
 	toMarkUp_lang(L,CT,CV,Chars))),_,true)),!.
 
 % VARIABLES
@@ -133,7 +133,7 @@ close_list_var([M|Ms],[M|Ls]):-!,
 	
 getTermlFormula(L,Term,Vars,Chars):-
 	Term=..[F,A|Args],
-	atom_concat('$',_,F), !,
+	atom(F),atom_concat('$',_,F), !,
 	getTermlFormula(L,write_dollar(F,[A|Args]),Vars,Chars).
  
 
@@ -338,7 +338,7 @@ getTermlFormula(L,via(Form,V),Vars,Out):-
 	getTermlFormula(L,via(Form),TVars,Out),!.
 
 
-:-dynamic(show_entails).
+:-dynamic(show_entails/0).
 
 getTermlFormula(L,via(entails(Pre,(Post))),Vars,Out):-not(show_entails),!,
 	getTermlFormula(L,(  via('=>'(Pre,Post)) ),Vars,Out).
@@ -644,7 +644,7 @@ toMarkUp_lang(_,Atom,_VS,Chars):-number(Atom),!,sformat(Chars,'~w',[Atom]).
 toMarkUp_lang(L,Value,Vars,Chars):-
 	sigmaCache(PredR, skolem, Value = x(Name,Expression),SKVARS,KB, Ctx, TN, Auth, State),!, 
 	    toMarkUp_lang(kif,Name,Vars,NameQ),  prependQuestionMark(NameQ,NameQM),
-	    subst(x(Sk,Expression),Sk,NameQM,x(NSk,NExpression)),!,
+	    ok_subst(x(Sk,Expression),Sk,NameQM,x(NSk,NExpression)),!,
             toMarkUp_lang(L,exists([NSk],NExpression),SKVARS,Chars).
 
 % all other Formulas get intercepted here

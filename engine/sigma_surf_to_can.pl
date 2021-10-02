@@ -86,7 +86,8 @@
 % getQueryClauses/3
 % ======================================================================
 
-ttsurf:-tsurf((=>(instance(A, 'Transaction'), 
+ttsurf:-tsurf(
+ (=>(instance(A, 'Transaction'), 
 	exists(B, exists(C, exists(D, exists(E, exists(F, exists(G, 
 		and(instance(E, 'Giving'), and(instance(D, 'Giving'), and(subProcess(E, A), and(subProcess(D, A), and(agent(E, G), and(agent(D, F), and(patient(E, C), 
 			and(patient(D, B), and(destination(E, F), and(destination(D, G), 
@@ -132,7 +133,7 @@ getQueryClauses(KB,Ctx,Prop,NConjAssertsClauses,KRVars,AllFlags):-
 canonicalizeProposition(KB,Ctx,Prop,CNF,DNF,ConjAssertsClauses,KRVars,AllFlags):- 
 	close_list(KRVars),!,                  
 	%writeObject(Prop,KRVars),
-	numbervars(Prop:KRVars:KB:Ctx),
+	sigma_numbervars(Prop:KRVars:KB:Ctx,666,_),
 	logOnFailure(getModeledPredicates(Prop,FmlInOpen)),!,
 	%writeObject('<hr>getModeledPredicates: \n',KRVars),
 	%writeObject(FmlInOpen,KRVars),
@@ -193,7 +194,7 @@ ifThenElse(_,_,E):- E,!.
 ground_unused_vars([],KRVars,SKG,SKG):-!.
 ground_unused_vars([V1|Ante],KRVars,SK,SKG):-!,
 	toMarkUp(kif,V1,KRVars,VN),
-	subst(SK,V1,VN,SKGM),
+	ok_subst(SK,V1,VN,SKGM),
 	ground_unused_vars(Ante,KRVars,SKGM,SKG).
 	
 add_ante([],Together,NewAnte,NewAnte):-!.
@@ -214,12 +215,12 @@ do_flag(pre(Var,Call),Together,Ante,AnteMid):-
 do_flag(_,Together,AnteMid,AnteMid):-!.
 
 
-add_skolems_to_body([],Ante,Cons,ConVars,Ante):-!.
+add_skolems_to_body([],Ante,_Cons,_ConVars,Ante):-!.
 
 add_skolems_to_body([replaceConsVar(Var,'$existential'(VarName,not(Formula)))|Flags],Ante,Cons,ConVars,NewAnte):-!,
 	ifThenElse( 
 		(functor(Cons,not,_),member(Var,ConVars)),
-		conjoin_kr(Ante,'$existential'(Var,VarName,not(Formula)),NewAnteM),
+    (subst(Formula,VarName,Var,VFormula),conjoin_kr(Ante,'$existential'(Var,1,not(VFormula)),NewAnteM)),
 		Ante=NewAnteM),
 	getPrologVars(NewAnteM:Cons,NewConstVars,_,_),
 	add_skolems_to_body(Flags,NewAnteM,Cons,NewConstVars,NewAnte).
@@ -227,7 +228,7 @@ add_skolems_to_body([replaceConsVar(Var,'$existential'(VarName,not(Formula)))|Fl
 add_skolems_to_body([replaceConsVar(Var,'$existential'(VarName,Formula))|Flags],Ante,Cons,ConVars,NewAnte):-!,
 	ifThenElse( 
 		(not(functor(Cons,not,_)),member(Var,ConVars)),
-		conjoin_kr(Ante,'$existential'(Var,VarName,Formula),NewAnteM),
+    (subst(Formula,VarName,Var,VFormula),conjoin_kr(Ante,'$existential'(Var,1,VFormula),NewAnteM)),
 		Ante=NewAnteM),
 	getPrologVars(NewAnteM:Cons,NewConstVars,_,_),
 	add_skolems_to_body(Flags,NewAnteM,Cons,NewConstVars,NewAnte).
@@ -262,7 +263,7 @@ skolemIfRequired(AllFlags,AnteVars,KRVars,,NewCons):-
 			subtract(AnteVars,ConsVars,UnusedVars),       
 			logOnFailure(ground_unused_vars(UnusedVars,KRVars,'$existential'(VarName,not(Formula)),Grounded),
 			logOnFailure(putDomainInSkolem(Var,AllFlags,Grounded,SKGD)),
-			subst(not(Cons),Var,SKGD,NConsM),!,
+			ok_subst(not(Cons),Var,SKGD,NConsM),!,
 			skolemIfRequired(AllFlags,Ante,KRVars,NConsM,Flags,NewCons).
     			
 skolemIfRequired(AllFlags,Ante,KRVars,Cons,[replaceConsVar(Var,'$existential'(VarName,Formula))|Flags],NewCons):-
@@ -274,7 +275,7 @@ skolemIfRequired(AllFlags,Ante,KRVars,Cons,[replaceConsVar(Var,'$existential'(Va
 				subtract(AnteVars,ConsVars,UnusedVars),       
 				logOnFailure(ground_unused_vars(UnusedVars,KRVars,'$existential'(VarName,Formula),Grounded)),
 				logOnFailure(putDomainInSkolem(Var,AllFlags,Grounded,SKGD)),
-				subst(Cons,Var,SKGD,NConsM),!,
+				ok_subst(Cons,Var,SKGD,NConsM),!,
 				skolemIfRequired(AllFlags,Ante,KRVars,NConsM,Flags,NewCons).
 
 skolemIfRequired(AllFlags,Ante,KRVars,not(Cons),[replaceConsVar(Var,functional(VarName,not(Formula)))|Flags],NewCons):-
@@ -282,7 +283,7 @@ skolemIfRequired(AllFlags,Ante,KRVars,not(Cons),[replaceConsVar(Var,functional(V
 				subtract(AnteVars,ConsVars,UnusedVars),       
 				logOnFailure(ground_unused_vars(UnusedVars,KRVars,functional(VarName,not(Formula)),Grounded)),
 				logOnFailure(putDomainInSkolem(Var,AllFlags,Grounded,SKGD)),
-				subst(not(Cons),Var,SKGD,NConsM),!,
+				ok_subst(not(Cons),Var,SKGD,NConsM),!,
 				skolemIfRequired(AllFlags,Ante,KRVars,NConsM,Flags,NewCons).
      			
 */
@@ -293,7 +294,7 @@ skolemIfRequired(AllFlags,AnteVars,KRVars,Cons,[replaceConsVar(Var,functional(Va
 				subtract(AnteVars,ConsVars,UnusedVars),       
 				logOnFailure(ground_unused_vars(UnusedVars,KRVars,functional(VarName,Formula),Grounded)),
 				logOnFailure(putDomainInSkolem(Var,AllFlags,Grounded,SKGD)),
-				subst(Cons,Var,SKGD,NConsM),!,
+				ok_subst(Cons,Var,SKGD,NConsM),!,
 				skolemIfRequired(AllFlags,Ante,KRVars,NConsM,Flags,NewCons).
 								
 skolemIfRequired(AllFlags,AnteVars,KRVars,Cons,[_|Flags],NewCons):-!,
@@ -337,6 +338,12 @@ putDomainsTogether(V,Flags,[domainV(V,FUnivListO)|Flags]):-
 % UFreeV:      List of free variables in Fml.
 % Paths:      Number of disjunctive paths in Fml.
 
+do_nnf_default(Fml,Fml3):- common_logic_snark:(nnf_default(Fml,Fml2),as_sigma(Fml2,Fml3)).
+
+getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,Fml,UFreeV,Out,N):- 
+  do_nnf_default(Fml,Fml3), 
+  getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,Fml3,UFreeV,Out,N).
+
 % Variable as Formula collect its caller
 getNegationForm(Caller,ArgN,KB,Ctx,KRVars,[dom(Var,[Caller:ArgN]) ],Var,UFreeV,Var,1):- isSlot(Var),!.
 
@@ -366,7 +373,6 @@ getNegationForm(Caller,ArgN,KB,Ctx,KRVars,[],equal(A,B),UFreeV,equal(A,B),1):-is
 getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,equal(A,Fml),UFreeV,Out,N):-isSlot(A),!,
 	getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,equal(Fml,A),UFreeV,Out,N),!.
 	
-       						       
 /*
 getNegationForm(Caller,ArgN,KB,Ctx,KRVars,[dom(X,[F1:Range1,F2:Range2])|PreQ],equal(Fml1,Fml2),UFreeV,Result,2):-
 	Fml1=..[holds,F1|Args1],hlPredicateAttribute(F1,'Function'),
@@ -416,7 +422,7 @@ getNegationForm(Caller,ArgN,KB,Ctx,KRVars,[forall(X)|PreQ],forall(X,Fml),UFreeV,
 
 getNegationForm(Caller,ArgN,KB,Ctx,KRVars,[replaceConsVar(X,'$existential'(Repl,SKF))|PreQ],exists(X,Fml),UFreeV, NNF,Paths) :- !,
 	 toMarkUp(kif,X,KRVars,Repl),
-	 subst( Fml, X, (Repl), SKF),!,
+	 ok_subst( Fml, X, (Repl), SKF),!,
 	getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,Fml,UFreeV,NNF,Paths).	
 	
 /*
@@ -431,7 +437,11 @@ getNegationForm(Caller,ArgN,KB,Ctx,KRVars,[post(Var,eval(Result,Var)),replaceCon
 	PResult=..[F|PArgsO],!,
 	Result=..[F|ArgsO],!.
 */
-	
+
+getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,A and B,UFreeV,NNF,Paths) :- 
+  do_nnf_default((A and B), AND),
+  getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,AND,UFreeV,NNF,Paths).
+
 getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,A and B,UFreeV,NNF,Paths) :- !,
 	getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ1,A,UFreeV,NNF1,Paths1),
 	getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ2,B,UFreeV,NNF2,Paths2),
@@ -501,7 +511,8 @@ getNegationForm(Caller,ArgN,KB,Ctx,KRVars,[dom(F,[holds:1])|PreQ],(Term),UVars,(
 % Strip Not Holds and Loop over 
 getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,(Term),UVars,(Result),N):- 
 	Term=..[holds,F|Args],
-	NTerm=..[F|Args], 
+  nonvar(F),
+	append_termlist(F,Args,NTerm), 
 	getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,NTerm,UVars,Result,N),!.
  
 
@@ -515,7 +526,7 @@ getNegationForm(Caller,ArgN,KB,Ctx,KRVars,[dom(F,['AssignmentFn':1])|PreQ],(Term
 % Strip Not Holds and Loop over 
 getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,(Term),UVars,(Result),N):- 
 	Term=..['AssignmentFn',F|Args],
-	NTerm=..[F|Args], 
+  append_termlist(F,Args,NTerm),
 	getNegationForm(Caller,ArgN,KB,Ctx,KRVars,PreQ,NTerm,UVars,Result,N),!.
  
 
@@ -780,7 +791,7 @@ replace_in_clause(T1,[],[T1],[],[]):-!.
 replace_in_clause(T1,[T2|Clause],PutFront,NewClause,Generalized):-
 	not(functor(T1,common,_)),
 	not(functor(T2,common,_)),
-	once(notrace(compareVariant(T1,T2,GT,Cost1,Cost2))),
+	once(sigma_notrace(compareVariant(T1,T2,GT,Cost1,Cost2))),
 		compare(Dif,Cost1,Cost2),
 		apply_mgu(Dif,Cost1,Cost2,T1,T2,GT,PutFront,Clause,NewClause,Generalized),!.
 
@@ -876,7 +887,7 @@ toClauseFormAll(Disj,Clf) :-
         getConsequentList(Disj,Cons), 
         toClauseForm_proc(Disj,Cons,Clf). %, write_clause_with_number(Clf,TN1).
 
-getConsequentList(A,A) :-isSlot(A),!.
+getConsequentList(A,[A]) :-isSlot(A),!.
 
 getConsequentList(Fml,Clf) :-
         Fml = entails(B,A) ->     % contrapositives not made if in Clause Form (i.g. built from "if")
@@ -902,7 +913,7 @@ toClauseForm_proc(Disj,[Con|RestCons],Clf) :-
 toClauseForm_proc(_,[],true).
 
 	
-getAntecedantForConsequent(Cons,Fml,Ante):-(isSlot(Cons);isSlot(Fml)),!,Ante=true.
+getAntecedantForConsequent(Cons,Fml,Ante):-once(var(Cons),isSlot(Cons);isSlot(Fml)),!,Ante=true.
 getAntecedantForConsequent(Cons,Fml,Ante) :-
         Fml = entails(B,A) ->
                 getAntecedantForConsequent(Cons,A,A1),

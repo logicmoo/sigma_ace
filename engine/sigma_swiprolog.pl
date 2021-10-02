@@ -3,6 +3,8 @@
 % This File is the bootstrap for the Sigma Infence engine For SWI-Prolog
 % So first is loads the proper files and then starts up the system
 % ===================================================================
+:- multifile(rdf_rewrite:arity/2).
+:- dynamic(rdf_rewrite:arity/2).
 
 :-use_module(library(system)).
 :-use_module(library(shlib)).
@@ -18,7 +20,7 @@
 :- use_module(library(quintus)).        
 :- use_module(library(qsave)).        
     
-
+:- ensure_loaded(sigma_server).
 %:- use_module(library(backcomp)).        
 
 
@@ -55,11 +57,13 @@ writeModeSet(Mode):-
 
 :-absolute_file_name('../..',X),assert('ROOT_RT'(X)).
 
-% numbervars/1 (just simpler numbervars.. will use a rand9ome start point so if a partially numbered getPrologVars wont get dup getPrologVars
+% sigma_numbervars/1 (just simpler sigma_numbervars.. will use a rand9ome start point so if a partially numbered getPrologVars wont get dup getPrologVars
 
-numbervars(X):-get_time(T),convert_time(T,A,B,C,D,E,F,G),!,numbervars(X,'$VAR',G,_).
+sigma_numbervars(X):-get_time(T),convert_time(T,_A,_B,_C,_D,_E,_F,G),!,sigma_numbervars(X,I,_).
+sigma_numbervars(X,I,O):-         numbervars(X,I,O,[attvar(skip),singletons(false)]).
+sigma_numbervars(X,Functor,I,O):- numbervars(X,I,O,[functor_name(Functor),attvar(skip),singletons(false)]).
 
-once(X,Y):-once(X),once(Y).
+once(X,Y):- X -> (Y,!).
 
 :- dynamic sigmaCache/1.
 :- dynamic sigmaCache/6.
@@ -110,11 +114,12 @@ retractAllProlog(X):-retractall(X).
 :- current_prolog_flag(arch,'i386-win32') -> 
       ensure_loaded('sigma_win32.pl') ; ensure_loaded('sigma_unix.pl').
 
-% Each prolog has a specific way it could unnumber the result of a numbervars
+% Each prolog has a specific way it could unnumber the result of a sigma_numbervars
 % TODO find optimal solution
 
+:- if( \+ current_predicate(unnumbervars/2)).
 unnumbervars(X,Y):-term_to_atom(X,A),atom_to_term(A,Y,_).
-
+:- endif.
 
 % Prolog specific code choices
 if_prolog(swi,G):-call(G).  % Run B-Prolog Specifics

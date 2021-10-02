@@ -1269,7 +1269,7 @@ match_virtual_bottom(Clause,SoFar,SLits):-
 	copy_term(Clause,CClause),
 	split_clause(CClause,CHead,CBody),
 	example_saturated(CHead),
-	numbervars(CBody,0,_),
+	sigma_numbervars(CBody,0,_),
 	match_body_modes(true,CBody),
 	match_bot_lits(ProgolClause,SoFar,Lits),
 	quicksort(ascending,Lits,SLits).
@@ -3769,7 +3769,7 @@ pp_dclause((H:-B),Pretty):-
         !,
         %copy((H:-B),(Head:-Body)),
 	copy_term((H:-B),(Head:-Body)),
-        numbervars((Head:-Body),0,_),
+        sigma_numbervars((Head:-Body),0,_),
         progol_portray(Pretty,Head),
         (Pretty = true ->
                 write(' if:');
@@ -3781,7 +3781,7 @@ pp_dclause((H:-B),Pretty):-
 pp_dclause((Lit),Pretty):-
         %copy(Lit,Lit1),
 	copy_term(Lit,Lit1),
-        numbervars(Lit1,0,_),
+        sigma_numbervars(Lit1,0,_),
         progol_portray(Pretty,Lit1),
         write('.'), nl.
  
@@ -3795,7 +3795,7 @@ pp_dlist(Clause):-
 pp_dlist(Clause,Pretty):-
         %copy(Clause,[Head1|Body1]),
 	copy_term(Clause,[Head1|Body1]),
-        numbervars([Head1|Body1],0,_),
+        sigma_numbervars([Head1|Body1],0,_),
         progol_portray(Pretty,Head1),
         (Body1 = [] ->
                 print('.'), nl;
@@ -4535,12 +4535,12 @@ skolemize((Head:-Body),SHead,SBody,SkolemVars):-
 	!,
 	%copy((Head:-Body),(SHead:-Body1)),
 	copy_term((Head:-Body),(SHead:-Body1)),
-	numbervars((SHead:-Body1),0,SkolemVars),
+	sigma_numbervars((SHead:-Body1),0,SkolemVars),
 	goals_to_list(Body1,SBody).
 skolemize(UnitClause,Lit,[],SkolemVars):-
 	%copy(UnitClause,Lit),
 	copy_term(UnitClause,Lit),
-	numbervars(Lit,0,SkolemVars).
+	sigma_numbervars(Lit,0,SkolemVars).
 skolemize(UnitClause,Lit):-
 	skolemize(UnitClause,Lit,[],_).
 
@@ -5160,7 +5160,7 @@ show(prior):-
 	p_message('refinement priors'),
 	beta(Refine,A,B),
 	%copy(Refine,Refine1),
-	%numbervars(Refine1,0,_),
+	%sigma_numbervars(Refine1,0,_),
 	%write(beta(Refine1,A,B)), write('.'), nl,
 	portray_clause(beta(Refine,A,B)),
 	fail.
@@ -5169,7 +5169,7 @@ show(posterior):-
 	recorded(refine,beta(R,A,B),_),
 	recorded(refine,refine_id(Refine,R),_),
 	%copy(Refine,Refine1),
-	%numbervars(Refine1,0,_),
+	%sigma_numbervars(Refine1,0,_),
 	%write(beta(Refine1,A,B)), write('.'), nl,
 	portray_clause(beta(Refine,A,B)),
 	fail.
@@ -5456,7 +5456,7 @@ restorehyp.
 
 show1(Area,Pred):-
         recorded(Area,Pred,_),
-        %copy(Pred,Pred1), numbervars(Pred1,0,_),
+        %copy(Pred,Pred1), sigma_numbervars(Pred1,0,_),
         %write(Pred1), write('.'), nl,
 	portray_clause(Pred),
         fail.
@@ -5646,7 +5646,7 @@ add_kb_context_p(HB,DynStat,_,_,Var,Var):-var(Var),!.
 add_kb_context_p(HB,DynStat,_,_,'$VAR'(N),'$VAR'(N)):-!.
 
 add_kb_context_p(b,DynStat,KB,Ctx,not('equal'(T1,T2)),( T1 \== T2 )):-!. 
-add_kb_context_p(h,DynStat,KB,Ctx,not('equal'(T1,T2)),nop):-!. 
+add_kb_context_p(h,DynStat,KB,Ctx,not('equal'(T1,T2)),nop_ok):-!. 
 
 add_kb_context_p(HB,DynStat,KB,Ctx, ':-'(A) , ':-'(AA)):-  !,
             add_kb_context_p(HB,DynStat,KB,Ctx,A,AA).
@@ -7024,7 +7024,7 @@ skolem2( F, X, FreeV, FmlSk) :-
 	entity_gen(Entity),   % Create a new 'symbolic name'
    close_freeVars(FreeV,CloseFreeV),   %XSB leaves the tail of the varaibles.. open.. we must close it
 	Sk = ['AssignmentFn',Entity,CloseFreeV],  %Construct the SK-Term
-   subst( F, X, Sk, FmlSk ).   % Replace the Skolems Var with the Term
+   ok_subst( F, X, Sk, FmlSk ).   % Replace the Skolems Var with the Term
 
 
 conv_pred(_C,[Pred|ARGS],[browser_only,[Pred|ARGS]]):-member(Pred,[
@@ -7474,7 +7474,7 @@ putin(X,[Y|L],[Y|L1]) :- putin(X,L,L1).
 	entity_gen(Entity),
    close_freeVars(FreeV,CloseFreeV),
 	Sk =..['AssignmentFn',Entity,CloseFreeV],
-   subst( F, X, Sk, FmlSk ).
+   ok_subst( F, X, Sk, FmlSk ).
 
 close_freeVars(XX,X):-
                  append(X,[_],XX).
@@ -7498,15 +7498,15 @@ skolemize(Fml,X,FreeV,FmlSk):-
 
 %%% Substitution
 
-% Usage: subst(+Fml,+X,+Sk,?FmlSk)
+% Usage: ok_subst(+Fml,+X,+Sk,?FmlSk)
 
-subst( forAll(Y,P), X,Sk, forAll(Y,P1) ) :- !, subst( P,X,Sk,P1 ).
-subst(  exists(Y,P), X,Sk,  exists(Y,P1) ) :- !, subst( P,X,Sk,P1 ).
-subst(    P and Q, X,Sk,   P1 and Q1 ) :- !, subst( P,X,Sk,P1 ),
-                                         subst( Q,X,Sk,Q1 ).
-subst(    P or Q, X,Sk,   P1 or Q1 ) :- !, subst( P,X,Sk,P1 ),
-                                         subst( Q,X,Sk,Q1 ).
-subst(        P, X,Sk,        P1 ) :- functor(P,_,N),
+ok_subst( forAll(Y,P), X,Sk, forAll(Y,P1) ) :- !, ok_subst( P,X,Sk,P1 ).
+ok_subst(  exists(Y,P), X,Sk,  exists(Y,P1) ) :- !, ok_subst( P,X,Sk,P1 ).
+ok_subst(    P and Q, X,Sk,   P1 and Q1 ) :- !, ok_subst( P,X,Sk,P1 ),
+                                         ok_subst( Q,X,Sk,Q1 ).
+ok_subst(    P or Q, X,Sk,   P1 or Q1 ) :- !, ok_subst( P,X,Sk,P1 ),
+                                         ok_subst( Q,X,Sk,Q1 ).
+ok_subst(        P, X,Sk,        P1 ) :- functor(P,_,N),
                                       subst1( X, Sk, P, N, P1 ).
 
 subst1( _,  _, P, 0, P  ).
@@ -7516,7 +7516,7 @@ subst1( X, Sk, P, N, P1 ) :- N > 0, P =..[F|Args], subst2( X, Sk, Args, ArgS ),
 subst2( _,  _, [], [] ).
 subst2( X, Sk, [A|As], [Sk|AS] ) :- X == A, !, subst2( X, Sk, As, AS).
 subst2( X, Sk, [A|As], [A|AS]  ) :- var(A), !, subst2( X, Sk, As, AS).
-subst2( X, Sk, [A|As], [Ap|AS] ) :- subst( A,X,Sk,Ap ),
+subst2( X, Sk, [A|As], [Ap|AS] ) :- ok_subst( A,X,Sk,Ap ),
                                     subst2( X, Sk, As, AS).
 
 /********************************  The End ***********************************/
@@ -8362,7 +8362,7 @@ write_xml_vars_call(V):-var(V),
 
 write_xml_vars_call(V):-
          fmt_write("<Result>",_),
-         numbervars(V),!,
+         sigma_numbervars(V),!,
          write_xml_vars_call1(V),
          fmt_write("</Result>",_).
 
@@ -8387,7 +8387,7 @@ write_kif_vars_call(V):-var(V),
 
 write_kif_vars_call(V):-
          fmt_write("<Result>",_),
-         numbervars(V),!,
+         sigma_numbervars(V),!,
          write_kif_vars_call1(V),
          fmt_write("</Result>",_).
 
@@ -8697,19 +8697,19 @@ skolemize(Fml,X,FreeV,FmlSk):-
 % VARIABLES MAYBE EITHER PROLOG VARIABLES OR TERMS
 
 skolem( F, X, FreeV, FmlSk) :- gensym( f, Fun ), Sk =..[Fun|FreeV],
-                                subst( F, X, Sk, FmlSk ).
+                                ok_subst( F, X, Sk, FmlSk ).
 
 %%% Substitution
 
-% Usage: subst(+Fml,+X,+Sk,?FmlSk)
+% Usage: ok_subst(+Fml,+X,+Sk,?FmlSk)
 
-subst( forAll(Y,P), X,Sk, forAll(Y,P1) ) :- !, subst( P,X,Sk,P1 ).
-subst(  exists(Y,P), X,Sk,  exists(Y,P1) ) :- !, subst( P,X,Sk,P1 ).
-subst(    P  and  Q, X,Sk,   P1  and  Q1 ) :- !, subst( P,X,Sk,P1 ),
-                                         subst( Q,X,Sk,Q1 ).
-subst(    P or Q, X,Sk,   P1 or Q1 ) :- !, subst( P,X,Sk,P1 ),
-                                         subst( Q,X,Sk,Q1 ).
-subst(        P, X,Sk,        P1 ) :- functor(P,_,N),
+ok_subst( forAll(Y,P), X,Sk, forAll(Y,P1) ) :- !, ok_subst( P,X,Sk,P1 ).
+ok_subst(  exists(Y,P), X,Sk,  exists(Y,P1) ) :- !, ok_subst( P,X,Sk,P1 ).
+ok_subst(    P  and  Q, X,Sk,   P1  and  Q1 ) :- !, ok_subst( P,X,Sk,P1 ),
+                                         ok_subst( Q,X,Sk,Q1 ).
+ok_subst(    P or Q, X,Sk,   P1 or Q1 ) :- !, ok_subst( P,X,Sk,P1 ),
+                                         ok_subst( Q,X,Sk,Q1 ).
+ok_subst(        P, X,Sk,        P1 ) :- functor(P,_,N),
                                       subst1( X, Sk, P, N, P1 ).
 
 subst1( _,  _, P, 0, P  ).
@@ -8719,7 +8719,7 @@ subst1( X, Sk, P, N, P1 ) :- N > 0, P =..[F|Args], subst2( X, Sk, Args, ArgS ),
 subst2( _,  _, [], [] ).
 subst2( X, Sk, [A|As], [Sk|AS] ) :- X == A, !, subst2( X, Sk, As, AS).
 subst2( X, Sk, [A|As], [A|AS]  ) :- var(A), !, subst2( X, Sk, As, AS).
-subst2( X, Sk, [A|As], [Ap|AS] ) :- subst( A,X,Sk,Ap ),
+subst2( X, Sk, [A|As], [Ap|AS] ) :- ok_subst( A,X,Sk,Ap ),
                                     subst2( X, Sk, As, AS).
 
 /********************************  The End ***********************************/
@@ -8733,7 +8733,7 @@ list_to_atom_nc([H|T],A):-list_to_atom_nc(T,R),atom_concat(H,R,A).
 
 delete_log([],[]):-!.
 delete_log([A|B],C):-
-	member(A,[and,or,=>,exists,',','$VAR',holds,<=>,not,forAll,(':-'),',',';','instance',equal,equal,'subclass']),!,
+	member(A,[and,or,=>,exists,',',holds,<=>,not,forAll,(':-'),',',';','instance',equal,equal,'subclass']),!,
 	delete_log(B,C).  
 delete_log([A|B],C):-number(A),
 	delete_log(B,C).         
@@ -8921,8 +8921,8 @@ clean_head(Var,Var):-isSlot(Var),!.
 clean_head(not(consistent(A)),not(A)):-!.
 clean_head(A,A):-!.
 
-pclauses_to_assertions([],nop):-!.
-pclauses_to_assertions([cl([],[])],nop):-!.
+pclauses_to_assertions([],nop_ok):-!.
+pclauses_to_assertions([cl([],[])],nop_ok):-!.
 pclauses_to_assertions([cl([A],[])],(A:-true)):-!.
 pclauses_to_assertions([cl([A],PLIST)],(A:-Prolog)):-!,conv(PLIST,Prolog),!.
 pclauses_to_assertions([CL|LIST],(C,PL)):-!,
@@ -9237,15 +9237,15 @@ add_f2(P,N,[A|RGS],Ante,[NA|NCons],FAnte):-
 	NN is N+1,
 	logOnFailure(add_f2(P,NN,RGS,NAnte,NCons,FAnte)).
 
-make_rule(NewVar,A,true,Ante,_):-isVar_or_skolem(A),in_ant(A,Ante),NewVar=A,numbervars(NewVar),!.
-make_rule(NewVar,A,t_instance(A,Domain),_,Domain):-isVar_or_skolem(A),NewVar=A,numbervars(NewVar),!.
+make_rule(NewVar,A,true,Ante,_):-isVar_or_skolem(A),in_ant(A,Ante),NewVar=A,sigma_numbervars(NewVar),!.
+make_rule(NewVar,A,t_instance(A,Domain),_,Domain):-isVar_or_skolem(A),NewVar=A,sigma_numbervars(NewVar),!.
 make_rule(NewVar,A,true,_,Domain):-atom(A),NewVar=A,!.
 make_rule(NewVar,A,true,_,Domain):- Domain=='Relation',NewVar=A,!.
-make_rule(NewVar,A,u(NewVar,A,Domain),_,Domain):-numbervars(NewVar).
+make_rule(NewVar,A,u(NewVar,A,Domain),_,Domain):-sigma_numbervars(NewVar).
 
 
 in_ant(A,true):-!,fail.
-in_ant(A,Ante):-subst(Ante,A,'zzskFn'(_),Res),!,not(Ante=Res).	
+in_ant(A,Ante):-ok_subst(Ante,A,'zzskFn'(_),Res),!,not(Ante=Res).	
 
 
 % ================================================================
